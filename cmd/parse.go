@@ -15,6 +15,7 @@ func Parse() (err error) {
 	info := Args.Info
 	source := ""
 	ext := ""
+	script := ""
 	if cfg.GenAfterParse {
 		if len(cfg.Template) == 0 {
 			return errors.New("You have to add at least one code template by `cf config`")
@@ -22,6 +23,9 @@ func Parse() (err error) {
 		path := cfg.Template[cfg.Default].Path
 		ext = filepath.Ext(path)
 		if source, err = readTemplateSource(path, cln); err != nil {
+			return
+		}
+		if script, err = readTemplateSource(cfg.ScriptTemplatePath, cln); err != nil {
 			return
 		}
 	}
@@ -33,6 +37,9 @@ func Parse() (err error) {
 		if cfg.GenAfterParse {
 			for _, path := range paths {
 				gen(source, path, ext)
+				if err := genScript(script, path, ext); err != nil {
+					println(err)
+				}
 			}
 		}
 		return nil

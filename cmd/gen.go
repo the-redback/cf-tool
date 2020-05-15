@@ -55,6 +55,30 @@ func gen(source, currentPath, ext string) error {
 	return err
 }
 
+func genScript(script, currentPath, srcExt string) error {
+	cfg := config.Instance
+	// Replace template inside test.sh.
+	srcFilename := filepath.Join(currentPath, filepath.Base(currentPath)) + srcExt
+	path, full := filepath.Split(srcFilename)
+	file := full[:len(full)-len(srcExt)]
+	rand := util.RandString(8)
+	script = strings.ReplaceAll(script, "$%rand%$", rand)
+	script = strings.ReplaceAll(script, "$%path%$", path)
+	script = strings.ReplaceAll(script, "$%full%$", full)
+	script = strings.ReplaceAll(script, "$%file%$", file)
+
+	savePath := filepath.Join(currentPath, filepath.Base(cfg.ScriptTemplatePath))
+	if _, err := os.Stat(savePath); err == nil {
+		fmt.Println("script file already exists. Skipping.")
+	}
+
+	err := ioutil.WriteFile(savePath, []byte(script), 0777)
+	if err == nil {
+		color.Green("Generated! See %v", filepath.Base(savePath))
+	}
+	return err
+}
+
 // Gen command
 func Gen() (err error) {
 	cfg := config.Instance
@@ -95,5 +119,16 @@ func Gen() (err error) {
 	}
 
 	ext := filepath.Ext(path)
-	return gen(source, currentPath, ext)
+	if err = gen(source, currentPath, ext); err != nil {
+		return err
+	}
+
+	if cfg.ScriptTemplatePath != "" {
+		var script string
+		if script, err = readTemplateSource(cfg.ScriptTemplatePath, cln); err != nil {
+			return
+		}
+		return genScript(script, currentPath, ext)
+	}
+	return err
 }

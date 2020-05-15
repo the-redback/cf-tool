@@ -1,10 +1,10 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"bytes"
 	"path/filepath"
 
 	"github.com/fatih/color"
@@ -24,13 +24,14 @@ type CodeTemplate struct {
 
 // Config load and save configuration
 type Config struct {
-	Template      []CodeTemplate    `json:"template"`
-	Default       int               `json:"default"`
-	GenAfterParse bool              `json:"gen_after_parse"`
-	Host          string            `json:"host"`
-	Proxy         string            `json:"proxy"`
-	FolderName    map[string]string `json:"folder_name"`
-	path          string
+	Template           []CodeTemplate    `json:"template"`
+	ScriptTemplatePath string            `json:"script_template"`
+	Default            int               `json:"default"`
+	GenAfterParse      bool              `json:"gen_after_parse"`
+	Host               string            `json:"host"`
+	Proxy              string            `json:"proxy"`
+	FolderName         map[string]string `json:"folder_name"`
+	path               string
 }
 
 // Instance global configuration
