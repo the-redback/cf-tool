@@ -16,6 +16,7 @@ type CodeTemplate struct {
 	Alias           string   `json:"alias"`
 	Lang            string   `json:"lang"`
 	Path            string   `json:"path"`
+	ExtraFilePath   string   `json:"extra_file_path"`
 	Suffix          []string `json:"suffix"`
 	BeforeScript    string   `json:"before_script"`
 	DbgBeforeScript string   `json:"debugging_before_script"`

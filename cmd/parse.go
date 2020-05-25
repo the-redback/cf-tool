@@ -15,15 +15,24 @@ func Parse() (err error) {
 	info := Args.Info
 	source := ""
 	ext := ""
+	extraFile := ""
+	extraFilePath := ""
 	if cfg.GenAfterParse {
 		if len(cfg.Template) == 0 {
 			return errors.New("You have to add at least one code template by `cf config`")
 		}
 		path := cfg.Template[cfg.Default].Path
+		extraFilePath = cfg.Template[cfg.Default].ExtraFilePath
 		ext = filepath.Ext(path)
 		if source, err = readTemplateSource(path, cln); err != nil {
 			return
 		}
+		if extraFilePath != "" {
+			if extraFile, err = readTemplateSource(extraFilePath, cln); err != nil {
+				return
+			}
+		}
+
 	}
 	work := func() error {
 		_, paths, err := cln.Parse(info)
@@ -33,6 +42,11 @@ func Parse() (err error) {
 		if cfg.GenAfterParse {
 			for _, path := range paths {
 				gen(source, path, ext)
+				if extraFile != "" {
+					if err := genXtraFile(extraFile, extraFilePath, path); err != nil {
+						println(err)
+					}
+				}
 			}
 		}
 		return nil

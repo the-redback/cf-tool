@@ -55,6 +55,19 @@ func gen(source, currentPath, ext string) error {
 	return err
 }
 
+func genXtraFile(xtraFile, xtraFilePath, currentPath string) error {
+	savePath := filepath.Join(currentPath, filepath.Base(xtraFilePath))
+	if _, err := os.Stat(savePath); err == nil {
+		fmt.Println("Extra template file", filepath.Base(xtraFilePath), "already exists. Skipping.")
+	}
+
+	err := ioutil.WriteFile(savePath, []byte(xtraFile), 0777)
+	if err == nil {
+		color.Green("Generated! See %v", filepath.Base(savePath))
+	}
+	return err
+}
+
 // Gen command
 func Gen() (err error) {
 	cfg := config.Instance
@@ -63,6 +76,7 @@ func Gen() (err error) {
 	}
 	alias := Args.Alias
 	var path string
+	var extraFilePath string
 
 	if alias != "" {
 		templates := cfg.TemplateByAlias(alias)
@@ -70,6 +84,7 @@ func Gen() (err error) {
 			return fmt.Errorf("Cannot find any template with alias %v", alias)
 		} else if len(templates) == 1 {
 			path = templates[0].Path
+			extraFilePath = templates[0].ExtraFilePath
 		} else {
 			fmt.Printf("There are multiple templates with alias %v\n", alias)
 			for i, template := range templates {
@@ -78,9 +93,11 @@ func Gen() (err error) {
 			}
 			i := util.ChooseIndex(len(templates))
 			path = templates[i].Path
+			extraFilePath = templates[i].ExtraFilePath
 		}
 	} else {
 		path = cfg.Template[cfg.Default].Path
+		extraFilePath = cfg.Template[cfg.Default].ExtraFilePath
 	}
 
 	cln := client.Instance
@@ -95,5 +112,16 @@ func Gen() (err error) {
 	}
 
 	ext := filepath.Ext(path)
-	return gen(source, currentPath, ext)
+	if err = gen(source, currentPath, ext); err != nil {
+		return err
+	}
+
+	if extraFilePath != "" {
+		var extraFile string
+		if extraFile, err = readTemplateSource(extraFilePath, cln); err != nil {
+			return
+		}
+		return genXtraFile(extraFile, extraFilePath, currentPath)
+	}
+	return err
 }

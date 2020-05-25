@@ -125,7 +125,7 @@ func (c *Config) AddTemplate() (err error) {
 	afterScript := util.ScanlineTrim()
 
 	c.Template = append(c.Template, CodeTemplate{
-		alias, lang, path, suffix,
+		alias, lang, path, "", suffix,
 		beforeScript, dbgBeforeScript, script, afterScript,
 	})
 
